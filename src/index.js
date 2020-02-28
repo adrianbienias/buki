@@ -1,5 +1,3 @@
-import "./styles.css";
-
 const betFormElem = document.querySelector("#betForm");
 
 const randomInt = max => Math.floor(Math.random() * Math.floor(max));
