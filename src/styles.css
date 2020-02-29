@@ -27,9 +27,14 @@ input:not([type="checkbox"]),
   min-width: 180px;
 }
 
-label:not([for="isRandom-checkbox"]):not([for="isTaxed-checkbox"]) {
+label {
   display: block;
   margin-bottom: 5px;
+}
+
+input ~ label {
+  display: inline-block;
+  margin-bottom: 0;
 }
 
 .betForm__submit-button {
@@ -50,4 +55,10 @@ th {
 
 td {
   padding: 5px;
+}
+
+.info {
+  font-size: 12px;
+  font-style: italic;
+  margin: 3px 0;
 }

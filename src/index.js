@@ -10,7 +10,7 @@ const isIterationWin = (iteration, winEveryNbet, isRandom) => {
   }
 };
 
-const performCounting = () => {
+const getFormInputValues = () => {
   const formInputNames = [
     "initialCapital",
     "riskPerBet",
@@ -25,34 +25,46 @@ const performCounting = () => {
     formInputValues[inputName] = value;
   });
 
-  const isRandom = betFormElem.querySelector('input[name="isRandom"]').checked;
-  const isTaxed = betFormElem.querySelector('input[name="isTaxed"]').checked;
+  formInputValues.isRandom = betFormElem.querySelector(
+    'input[name="isRandom"]'
+  ).checked;
+  formInputValues.isTaxed = betFormElem.querySelector(
+    'input[name="isTaxed"]'
+  ).checked;
+  formInputValues.isFlexyRisk = betFormElem.querySelector(
+    'input[name="isFlexyRisk"]'
+  ).checked;
 
-  let tax = 0;
-  if (isTaxed) {
-    tax = 0.12;
-  }
+  return formInputValues;
+};
 
+const performCounting = () => {
   const {
     initialCapital,
     riskPerBet,
+    isFlexyRisk,
     betMultiplier,
     winEveryNbet,
-    numberOfBets
-  } = formInputValues;
+    isRandom,
+    numberOfBets,
+    isTaxed
+  } = getFormInputValues();
 
   let currentCapital = initialCapital;
+  let tax = isTaxed ? 0.12 : 0;
   let percentageInvestmentReturn = 0;
-  let percentageInvestmentReturnAfterTax = 0;
   let wins = 0;
   let losses = 0;
-  let simulation = [];
 
+  let simulation = [];
   for (let i = 1; i <= numberOfBets; i++) {
     let simulationRecord = {};
     simulationRecord["currentCapital"] = parseFloat(currentCapital).toFixed(2);
 
-    let betAmount = parseFloat((currentCapital * riskPerBet) / 100).toFixed(2);
+    let capitalToCountRiskFrom = isFlexyRisk ? currentCapital : initialCapital;
+    let betAmount = parseFloat(
+      (capitalToCountRiskFrom * riskPerBet) / 100
+    ).toFixed(2);
     let betAmountAfterTax = betAmount - betAmount * tax;
     let amountToWin = parseFloat(betAmountAfterTax) * parseFloat(betMultiplier);
 
@@ -84,14 +96,13 @@ const performCounting = () => {
     wins,
     losses,
     percentageInvestmentReturn,
-    percentageInvestmentReturnAfterTax,
     simulation
   };
 
   return result;
 };
 
-betFormElem.addEventListener("submit", e => {
+const handleSubmit = e => {
   e.preventDefault();
   const resultElem = document.querySelector("#result");
   const simulationElem = document.querySelector("#simulation");
@@ -146,7 +157,7 @@ betFormElem.addEventListener("submit", e => {
           ${row.amountToWin}
         </td>
         <td>
-          ${row.won === true ? "wygrana" : "przegrana"}
+          ${row.won === true ? "✅" : "❌"}
         </td>
       </tr>
     `;
@@ -156,4 +167,6 @@ betFormElem.addEventListener("submit", e => {
 
   resultElem.innerHTML = resultHTML;
   simulationElem.innerHTML = simulationHTML;
-});
+};
+
+betFormElem.addEventListener("submit", handleSubmit);
