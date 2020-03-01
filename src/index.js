@@ -16,7 +16,7 @@ const isIterationWin = (iteration, winAccuracy, numberOfBets, isRandom) => {
   // 100 / 50 = 2
 
   if (isRandom === true) {
-    return winAccuracy === randomInt(winAccuracy);
+    return winAccuracy === randomInt(winAccuracyNumber);
   } else {
     return winAccuracy === 0;
   }
