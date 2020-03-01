@@ -14,24 +14,17 @@
         zł
       </div>
       <div class="betForm__field">
-        <label for="">Ryzyko per zakład (%)</label>
-        <input name="riskPerBet" type="number" value="1" />
-        <div class="info">np. 1% z 10 000 zł = 100 zł na zakład</div>
-      </div>
-      <div class="betForm__field">
-        <input name="isFlexyRisk" id="isFlexyRisk-checkbox" type="checkbox" />
-        <label for="isFlexyRisk-checkbox">
-          Obliczaj kwotę zakładu względem zmian kapitału
-        </label>
+        <label for="">Kwota per zakład</label>
+        <input name="amountPerBet" type="number" value="100" /> zł
       </div>
       <div class="betForm__field">
         <label for="">Mnożnik zakładów</label>
-        <input name="betMultiplier" type="number" step="0.01" value="1.2" />
+        <input name="betMultiplier" type="number" step="0.01" value="2.4" />
       </div>
       <div class="betForm__field">
-        <label for="">Wygrywa co N zakład</label>
-        <input name="winEveryNbet" type="number" value="2" />
-        <div class="info">Np. co 2 zakład = 50% skuteczność</div>
+        <label for="">Szacowana skuteczność (%)</label>
+        <input name="winAccuracy" type="number" value="50" max="100" />
+        <div class="info">Np. 50% skuteczność = co 2 zakład wygrywa</div>
       </div>
       <div class="betForm__field">
         <input name="isRandom" id="isRandom-checkbox" type="checkbox" />

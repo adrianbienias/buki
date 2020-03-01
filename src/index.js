@@ -1,22 +1,34 @@
-const betFormElem = document.querySelector("#betForm");
+const betFormElem = document.querySelector('#betForm');
 
 const randomInt = max => Math.floor(Math.random() * Math.floor(max));
 
-const isIterationWin = (iteration, winEveryNbet, isRandom) => {
+const isIterationWin = (iteration, winAccuracy, numberOfBets, isRandom) => {
+  let winAccuracyNumber = Math.round(100 / parseInt(winAccuracy, 10));
+  winAccuracy = iteration % winAccuracyNumber;
+
+  // 100 / 100 = 1
+  // 100 / 90 = 1,111111111111111 ~ 1
+  // 100 / 80 = 1,25 ~ 1
+  // 100 / 70 = 1,428571428571429 ~ 1
+  // 100 / 67 = 1,492537313432836 ~ 1
+  // 100 / 66 = 1,515151515151515 ~ 2
+  // 100 / 60 = 1,666666666666667 ~ 2
+  // 100 / 50 = 2
+
   if (isRandom === true) {
-    return iteration % winEveryNbet === randomInt(winEveryNbet);
+    return winAccuracy === randomInt(winAccuracy);
   } else {
-    return iteration % winEveryNbet === 0;
+    return winAccuracy === 0;
   }
 };
 
 const getFormInputValues = () => {
   const formInputNames = [
-    "initialCapital",
-    "riskPerBet",
-    "betMultiplier",
-    "winEveryNbet",
-    "numberOfBets"
+    'initialCapital',
+    'amountPerBet',
+    'betMultiplier',
+    'winAccuracy',
+    'numberOfBets',
   ];
 
   let formInputValues = {};
@@ -25,15 +37,8 @@ const getFormInputValues = () => {
     formInputValues[inputName] = value;
   });
 
-  formInputValues.isRandom = betFormElem.querySelector(
-    'input[name="isRandom"]'
-  ).checked;
-  formInputValues.isTaxed = betFormElem.querySelector(
-    'input[name="isTaxed"]'
-  ).checked;
-  formInputValues.isFlexyRisk = betFormElem.querySelector(
-    'input[name="isFlexyRisk"]'
-  ).checked;
+  formInputValues.isRandom = betFormElem.querySelector('input[name="isRandom"]').checked;
+  formInputValues.isTaxed = betFormElem.querySelector('input[name="isTaxed"]').checked;
 
   return formInputValues;
 };
@@ -41,13 +46,12 @@ const getFormInputValues = () => {
 const performCounting = () => {
   const {
     initialCapital,
-    riskPerBet,
-    isFlexyRisk,
+    amountPerBet,
     betMultiplier,
-    winEveryNbet,
+    winAccuracy,
     isRandom,
     numberOfBets,
-    isTaxed
+    isTaxed,
   } = getFormInputValues();
 
   let currentCapital = initialCapital;
@@ -58,45 +62,43 @@ const performCounting = () => {
 
   let simulation = [];
   for (let i = 1; i <= numberOfBets; i++) {
-    let simulationRecord = {};
-    simulationRecord["currentCapital"] = parseFloat(currentCapital).toFixed(2);
+    let simulationData = {};
 
-    let capitalToCountRiskFrom = isFlexyRisk ? currentCapital : initialCapital;
-    let betAmount = parseFloat(
-      (capitalToCountRiskFrom * riskPerBet) / 100
-    ).toFixed(2);
-    let betAmountAfterTax = betAmount - betAmount * tax;
+    let capitalBeforeBet = parseFloat(currentCapital);
+    let betAmount = parseFloat(amountPerBet);
+    let betAmountAfterTax = betAmount - betAmount * parseFloat(tax);
     let amountToWin = parseFloat(betAmountAfterTax) * parseFloat(betMultiplier);
+    let capitalAfterBet = capitalBeforeBet - betAmount;
 
-    simulationRecord["betAmount"] = parseFloat(betAmount).toFixed(2);
-    simulationRecord["betAmountAfterTax"] = parseFloat(
-      betAmountAfterTax
-    ).toFixed(2);
-    simulationRecord["amountToWin"] = parseFloat(amountToWin).toFixed(2);
-
-    if (isIterationWin(i, winEveryNbet, isRandom)) {
+    if (isIterationWin(i, winAccuracy, numberOfBets, isRandom)) {
       wins++;
-      currentCapital = parseFloat(currentCapital) + parseFloat(amountToWin);
-      simulationRecord["won"] = true;
+      capitalAfterBet += parseFloat(amountToWin);
+      simulationData['won'] = true;
     } else {
       losses++;
-      currentCapital = parseFloat(currentCapital) - parseFloat(betAmount);
-      simulationRecord["won"] = false;
+      simulationData['won'] = false;
     }
 
-    currentCapital = parseFloat(currentCapital).toFixed(2);
-    simulation.push(simulationRecord);
+    currentCapital = parseFloat(capitalAfterBet);
+
+    simulationData['capitalBeforeBet'] = parseFloat(capitalBeforeBet).toFixed(2);
+    simulationData['betAmount'] = parseFloat(betAmount).toFixed(2);
+    simulationData['betAmountAfterTax'] = parseFloat(betAmountAfterTax).toFixed(2);
+    simulationData['amountToWin'] = parseFloat(amountToWin).toFixed(2);
+    simulationData['capitalAfterBet'] = parseFloat(capitalAfterBet).toFixed(2);
+
+    simulation.push(simulationData);
   }
 
   percentageInvestmentReturn = parseFloat(
-    ((currentCapital - initialCapital) / initialCapital) * 100
+    ((currentCapital - initialCapital) / initialCapital) * 100,
   ).toFixed(2);
 
   const result = {
     wins,
     losses,
     percentageInvestmentReturn,
-    simulation
+    simulation,
   };
 
   return result;
@@ -104,18 +106,13 @@ const performCounting = () => {
 
 const handleSubmit = e => {
   e.preventDefault();
-  const resultElem = document.querySelector("#result");
-  const simulationElem = document.querySelector("#simulation");
+  const resultElem = document.querySelector('#result');
+  const simulationElem = document.querySelector('#simulation');
 
-  const {
-    wins,
-    losses,
-    percentageInvestmentReturn,
-    simulation
-  } = performCounting();
+  const { wins, losses, percentageInvestmentReturn, simulation } = performCounting();
 
-  let resultHTML = "";
-  resultHTML += "<h3>Wyniki</h3>";
+  let resultHTML = '';
+  resultHTML += '<h3>Wyniki</h3>';
   resultHTML += `
     <p>
       Wygranych: ${wins}<br>
@@ -124,9 +121,9 @@ const handleSubmit = e => {
     </p>
   `;
 
-  let simulationHTML = "";
-  simulationHTML += "<h3>Symulacja</h3>";
-  simulationHTML += "<table>";
+  let simulationHTML = '';
+  simulationHTML += '<h3>Symulacja</h3>';
+  simulationHTML += '<table>';
   simulationHTML += `
     <tr>
       <th>Nr</th>
@@ -135,6 +132,7 @@ const handleSubmit = e => {
       <th>Po opodatkowaniu</th>
       <th>Do wygrania</th>
       <th>Status</th>
+      <th>Kapitał po zakładzie</th>
     </tr>
   `;
 
@@ -145,7 +143,7 @@ const handleSubmit = e => {
           ${index + 1}
         </td>
         <td>
-          ${row.currentCapital}
+          ${row.capitalBeforeBet}
         </td>
         <td>
           ${row.betAmount}
@@ -157,16 +155,19 @@ const handleSubmit = e => {
           ${row.amountToWin}
         </td>
         <td>
-          ${row.won === true ? "✅" : "❌"}
+          ${row.won === true ? '✅' : '❌'}
+        </td>
+        <td>
+          ${row.capitalAfterBet}
         </td>
       </tr>
     `;
   });
 
-  simulationHTML += "</table>";
+  simulationHTML += '</table>';
 
   resultElem.innerHTML = resultHTML;
   simulationElem.innerHTML = simulationHTML;
 };
 
-betFormElem.addEventListener("submit", handleSubmit);
+betFormElem.addEventListener('submit', handleSubmit);
